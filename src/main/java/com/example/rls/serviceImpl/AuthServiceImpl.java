@@ -79,6 +79,8 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Invalid password..!");
         }
 
+        validateLoginSource(loginRequest.getLoginSource(), user);
+
         String token = jwtUtils.generateJwtToken(user);
 
         revokeAllUserTokens(user);
@@ -96,6 +98,35 @@ public class AuthServiceImpl implements AuthService {
         
         return JwtResponse.builder().token(token).build();        
     }
+
+    private void validateLoginSource(String loginSource, User user) {
+
+        if (loginSource == null || loginSource.trim().isEmpty()) {
+            throw new IllegalArgumentException("Login source is required");
+        }
+
+        boolean isAdmin = user.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getRolename()));
+        boolean isUser = user.getRoles().stream().anyMatch(role -> "ROLE_USER".equals(role.getRolename()));
+
+        switch (loginSource.toUpperCase()) {
+
+            case "ADMIN":
+                if (!isAdmin) {
+                    throw new IllegalArgumentException("Invalid login source");
+                }
+                break;
+
+            case "USER":
+                if (!isUser) {
+                    throw new IllegalArgumentException("Invalid login source");
+                }
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid login source");
+        }
+    }
+
     
     private void revokeAllUserTokens(User user) {
         

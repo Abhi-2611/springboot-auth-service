@@ -6,6 +6,8 @@ server:
 spring:
   application:
     name: registration-login-system
+  profiles:
+    active: local
 
   datasource:
     url: jdbc:postgresql://localhost:5432/personal_projects_db
@@ -27,7 +29,6 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 3600000 
 
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+security:
+  allowed-origins: []
+

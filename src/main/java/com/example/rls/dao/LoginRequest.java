@@ -13,4 +13,5 @@ public class LoginRequest {
     
     private String login;  // username or email
     private String password;
+    private String loginSource;
 }
