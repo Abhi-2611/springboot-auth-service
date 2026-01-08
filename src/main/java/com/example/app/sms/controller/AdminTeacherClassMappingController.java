@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/teacherClassMapping")
-public class TeacherClassMappingController {
+public class AdminTeacherClassMappingController {
     
     @Autowired
     private TeacherClassMappingService teacherClassMappingService;
