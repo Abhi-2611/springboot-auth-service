@@ -64,5 +64,13 @@ public class StudentServiceImpl implements StudentService {
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
+
+
+    @Override
+    public List<Student> getStudentsByClassId(Long classId) {
+        schoolClassRepository.findById(classId)
+            .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+        return studentRepository.findByClassId(classId);
+    }
     
 }
