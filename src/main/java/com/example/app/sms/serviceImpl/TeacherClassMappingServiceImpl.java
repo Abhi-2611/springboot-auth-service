@@ -1,6 +1,7 @@
 package com.example.app.sms.serviceImpl;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,11 @@ public class TeacherClassMappingServiceImpl implements TeacherClassMappingServic
         teacherClassMappingRepository.save(mapping);
 
         return MessageResponse.builder().message("Teacher Assigned to Class Successfully").build();
+    }
+
+    @Override
+    public List<TeacherClassMapping> getAllTeacherClassMapping() {
+        return teacherClassMappingRepository.findAll();
     }
     
 }
