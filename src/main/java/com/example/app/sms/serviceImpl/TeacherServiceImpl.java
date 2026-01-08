@@ -1,5 +1,7 @@
 package com.example.app.sms.serviceImpl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,11 @@ public class TeacherServiceImpl implements TeacherService{
 
         return MessageResponse.builder().message("Teacher added Successfully").build();
         
+    }
+
+    @Override
+    public List<Teacher> getAllTeachers() {
+        return teacherRepository.findAll();
     }
     
 }
