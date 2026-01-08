@@ -12,4 +12,6 @@ public interface StudentService {
 
     MessageResponse createStudent(StudentDao studentDao);
 
+    List<Student> getAllStudents();
+
 }

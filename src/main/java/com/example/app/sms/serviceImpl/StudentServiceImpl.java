@@ -58,5 +58,11 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.save(student);
         return MessageResponse.builder().message("Student added Successfully").build();
     }
+
+
+    @Override
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
     
 }
