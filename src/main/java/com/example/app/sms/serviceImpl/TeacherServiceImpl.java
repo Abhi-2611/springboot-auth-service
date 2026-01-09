@@ -2,6 +2,7 @@ package com.example.app.sms.serviceImpl;
 
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,22 +29,14 @@ public class TeacherServiceImpl implements TeacherService{
     @Override
     public MessageResponse createTeacher(TeacherDao teacherDao) {
         
-        teacherRepository.findByUserId(teacherDao.getUserId())
-            .ifPresent(t -> {throw new DuplicateResourceException("Teacher already exists for userId: " + teacherDao.getUserId());});
+        teacherRepository.findByUserId(teacherDao.getUserId()).ifPresent(t -> {
+            throw new DuplicateResourceException("Teacher already exists for userId: " + teacherDao.getUserId());});
 
         Teacher teacher = new Teacher();
-        teacher.setUserId(teacherDao.getUserId());
-        teacher.setEmployeeCode(teacherDao.getEmployeeCode());
-        teacher.setFirstName(teacherDao.getFirstName());
-        teacher.setLastName(teacherDao.getLastName());
-        teacher.setDesignation(teacherDao.getDesignation());
-        teacher.setQualification(teacherDao.getQualification());
-        teacher.setJoinDate(teacherDao.getJoinDate());
-        teacher.setActiveFlag(teacherDao.getActiveFlag());
-
+        BeanUtils.copyProperties(teacherDao, teacher);
         teacherRepository.save(teacher);
-
-        return MessageResponse.builder().message("Teacher added Successfully").build();
+        return MessageResponse.builder()
+            .message("Teacher added Successfully").build();
         
     }
 
