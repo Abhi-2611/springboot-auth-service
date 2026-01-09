@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.DuplicateResourceException;
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.entity.Role;
 import com.example.app.rls.repository.RoleRepository;
 import com.example.app.rls.service.RoleService;
@@ -18,14 +20,14 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role getDefaultRole() {
         return roleRepository.findByRolename("ROLE_USER")
-            .orElseThrow(() -> new IllegalStateException("Default role ROLE_USER not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Default role ROLE_USER not found"));
     }
 
     @Override
     public Role createRole(String rolename) {
 
         if (roleRepository.existsByRolename(rolename.toUpperCase())) {
-            throw new IllegalArgumentException("Role already exists");
+            throw new DuplicateResourceException("Role already exists");
         }
 
         Role role = Role.builder().rolename(rolename.toUpperCase()).build();

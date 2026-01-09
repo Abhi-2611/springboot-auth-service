@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.DuplicateResourceException;
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.MessageResponse;
 import com.example.app.sms.dao.TeacherClassMappingDao;
 import com.example.app.sms.entity.TeacherClassMapping;
@@ -30,14 +32,14 @@ public class TeacherClassMappingServiceImpl implements TeacherClassMappingServic
     public MessageResponse assignTeacherToClass(TeacherClassMappingDao teacherClassMappingDao) {
         
         teacherRepository.findById(teacherClassMappingDao.getTeacherId())
-            .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + teacherClassMappingDao.getTeacherId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherClassMappingDao.getTeacherId()));
 
         schoolClassRepository.findById(teacherClassMappingDao.getClassId())
-            .orElseThrow(() -> new RuntimeException("Class not found with id: " + teacherClassMappingDao.getClassId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + teacherClassMappingDao.getClassId()));
 
         if (teacherClassMappingRepository
             .existsByTeacherIdAndClassId(teacherClassMappingDao.getTeacherId(), teacherClassMappingDao.getClassId())) {
-            throw new RuntimeException("Teacher already assigned to this class");
+            throw new DuplicateResourceException("Teacher already assigned to this class");
         }
 
         TeacherClassMapping mapping = new TeacherClassMapping();

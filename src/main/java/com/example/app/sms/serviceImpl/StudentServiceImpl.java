@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.MessageResponse;
 import com.example.app.sms.dao.StudentDao;
 import com.example.app.sms.entity.Student;
@@ -42,7 +43,7 @@ public class StudentServiceImpl implements StudentService {
     public MessageResponse createStudent(StudentDao studentDao) {
         
         schoolClassRepository.findById(studentDao.getClassId())
-            .orElseThrow(() -> new RuntimeException("Class not found with Id: " + studentDao.getClassId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Class not found with Id: " + studentDao.getClassId()));
 
         Student student = new Student();
         student.setStudentCode(studentDao.getStudentCode());
@@ -69,7 +70,7 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<Student> getStudentsByClassId(Long classId) {
         schoolClassRepository.findById(classId)
-            .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+            .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
         return studentRepository.findByClassId(classId);
     }
     

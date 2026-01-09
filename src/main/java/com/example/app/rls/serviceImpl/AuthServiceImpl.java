@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.BadRequestException;
+import com.example.app.common.exception.DuplicateResourceException;
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.JwtResponse;
 import com.example.app.rls.dao.LoginRequest;
 import com.example.app.rls.dao.MessageResponse;
@@ -44,11 +47,11 @@ public class AuthServiceImpl implements AuthService {
     public MessageResponse register(RegisterRequest registerRequest) {
         
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new IllegalArgumentException("Username already exist..!");
+            throw new DuplicateResourceException("Username already exist..!");
         }
         
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new IllegalArgumentException("Email already exist..!");
+            throw new DuplicateResourceException("Email already exist..!");
         }
 
         Role role = roleService.getDefaultRole();
@@ -73,10 +76,10 @@ public class AuthServiceImpl implements AuthService {
         String login = loginRequest.getLogin().toLowerCase();
 
         User user = userRepository.findByUsernameOrEmail(login, login)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid username or email..!"));
+                .orElseThrow(() -> new BadRequestException("Invalid username or email..!"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid password..!");
+            throw new BadRequestException("Invalid password..!");
         }
 
         validateLoginSource(loginRequest.getLoginSource(), user);
@@ -102,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
     private void validateLoginSource(String loginSource, User user) {
 
         if (loginSource == null || loginSource.trim().isEmpty()) {
-            throw new IllegalArgumentException("Login source is required");
+            throw new BadRequestException("Login source is required");
         }
 
         boolean isAdmin = user.getRoles().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getRolename()));
@@ -112,18 +115,18 @@ public class AuthServiceImpl implements AuthService {
 
             case "ADMIN":
                 if (!isAdmin) {
-                    throw new IllegalArgumentException("Invalid login source");
+                    throw new BadRequestException("Invalid login source");
                 }
                 break;
 
             case "USER":
                 if (!isUser) {
-                    throw new IllegalArgumentException("Invalid login source");
+                    throw new BadRequestException("Invalid login source");
                 }
                 break;
 
             default:
-                throw new IllegalArgumentException("Invalid login source");
+                throw new BadRequestException("Invalid login source");
         }
     }
 
@@ -146,20 +149,20 @@ public class AuthServiceImpl implements AuthService {
     public MessageResponse logout(String authorizationHeader) {
 
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
-            throw new IllegalArgumentException("Authorization header is missing");
+            throw new BadRequestException("Authorization header is missing");
         }
 
         if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid Authorization header format");
+            throw new BadRequestException("Invalid Authorization header format");
         }
 
         String token = authorizationHeader.substring(7);
 
         JwtToken jwtToken = jwtTokenRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid token"));
 
         if (jwtToken.isExpired() || jwtToken.isRevoked()) {
-            throw new IllegalArgumentException("Token already logged out");
+            throw new BadRequestException("Token already logged out");
         }
 
         jwtToken.setExpired(true);

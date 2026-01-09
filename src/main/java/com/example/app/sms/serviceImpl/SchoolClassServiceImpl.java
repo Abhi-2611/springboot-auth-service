@@ -3,6 +3,7 @@ package com.example.app.sms.serviceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.DuplicateResourceException;
 import com.example.app.sms.dao.SchoolClassDao;
 import com.example.app.sms.entity.SchoolClass;
 import com.example.app.sms.repository.SchoolClassRepository;
@@ -20,7 +21,7 @@ public class SchoolClassServiceImpl implements SchoolClassService  {
     
         schoolClassRepository.findByClassNameAndSectionAndAcademicYear(
             schoolClassDao.getClassName(), schoolClassDao.getSection(), schoolClassDao.getAcademicYear())
-            .ifPresent(sc -> {throw new RuntimeException("Class already exists");} );
+            .ifPresent(sc -> {throw new DuplicateResourceException("Class already exists");} );
         
         SchoolClass schoolClass = new SchoolClass();
         schoolClass.setClassName(schoolClassDao.getClassName());

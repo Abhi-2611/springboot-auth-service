@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.MessageResponse;
 import com.example.app.rls.dao.ResponseDao;
 import com.example.app.rls.dao.UserDao;
@@ -29,7 +30,7 @@ public class UserServiceImpl implements UserService {
     public UserDao getById(Long id) {
 
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return toDao(user);
     }
 
@@ -53,10 +54,10 @@ public class UserServiceImpl implements UserService {
     public MessageResponse assignRoleToUser(Long id, String rolename) {
 
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Role role = roleRepository.findByRolename(rolename)
-            .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         user.getRoles().add(role);
         userRepository.save(user);

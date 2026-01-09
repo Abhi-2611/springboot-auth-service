@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.app.common.exception.DuplicateResourceException;
+import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.MessageResponse;
 import com.example.app.sms.dao.TeacherDao;
 import com.example.app.sms.entity.Teacher;
@@ -20,14 +22,14 @@ public class TeacherServiceImpl implements TeacherService{
     @Override
     public Teacher getTeacherByUserId(Long userId) {
         return teacherRepository.findByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("Teacher not found for userId: " + userId));
+            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found for userId: " + userId));
     }
 
     @Override
     public MessageResponse createTeacher(TeacherDao teacherDao) {
         
         teacherRepository.findByUserId(teacherDao.getUserId())
-            .ifPresent(t -> {throw new RuntimeException("Teacher already exists for userId: " + teacherDao.getUserId());});
+            .ifPresent(t -> {throw new DuplicateResourceException("Teacher already exists for userId: " + teacherDao.getUserId());});
 
         Teacher teacher = new Teacher();
         teacher.setUserId(teacherDao.getUserId());
