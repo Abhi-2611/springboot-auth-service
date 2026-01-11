@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TeacherDao {
     
+    private Long id;
     private String employeeCode;
     private String firstName;
     private String lastName;

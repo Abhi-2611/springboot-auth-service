@@ -48,27 +48,30 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public MessageResponse createStudent(StudentDao studentDao) {
-        if (studentDao == null) {
-            throw new BadRequestException("Student data must not be null");
-        }
+        
         if (studentDao.getClassId() == null) {
             throw new BadRequestException("ClassId is required");
         }
-
         schoolClassRepository.findById(studentDao.getClassId()).orElseThrow(() ->
             new ResourceNotFoundException("Class not found with Id: " + studentDao.getClassId()));
-
-        Student student = new Student();
-        BeanUtils.copyProperties(studentDao, student);
-        student.setAdmissionDate(LocalDate.now());
-        if (student.getActiveFlag() == null) {
-            student.setActiveFlag('Y');
+        
+        Student student;
+        if (studentDao.getId() != null) {
+            student = studentRepository.findById(studentDao.getId()).orElseThrow(() -> 
+                new ResourceNotFoundException("Student not found with Id: " + studentDao.getId()));
+            BeanUtils.copyProperties(studentDao, student);
+        } else {
+            student = new Student();
+            BeanUtils.copyProperties(studentDao, student);
+            student.setAdmissionDate(LocalDate.now());
+            if (student.getActiveFlag() == null) {
+                student.setActiveFlag('Y');
+            }
         }
-
         studentRepository.save(student);
 
         return MessageResponse.builder()
-            .message("Student added successfully").build();
+            .message(studentDao.getId() == null ? "Student added successfully" : "Student updated successfully").build();
     }
 
 

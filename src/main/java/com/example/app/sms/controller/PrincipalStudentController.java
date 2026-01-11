@@ -1,7 +1,6 @@
 package com.example.app.sms.controller;
 
 import com.example.app.sms.dao.ResponseDao;
-import com.example.app.sms.dao.StudentDao;
 import com.example.app.sms.service.StudentService;
 
 import org.springframework.beans.factory.annotation.Autowired;

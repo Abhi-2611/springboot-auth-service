@@ -20,4 +20,5 @@ public class ResponseDao {
     private Boolean last;
 
     List<StudentDao> StudentList;
+    List<TeacherDao> TeacherList;
 }

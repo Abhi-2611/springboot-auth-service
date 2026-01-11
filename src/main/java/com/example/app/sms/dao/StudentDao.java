@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudentDao {
 
+    private Long id;
     private String studentCode;
     private String firstName;
     private String lastName;

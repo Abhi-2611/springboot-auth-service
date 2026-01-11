@@ -1,8 +1,7 @@
 package com.example.app.sms.service;
 
-import java.util.List;
-
 import com.example.app.rls.dao.MessageResponse;
+import com.example.app.sms.dao.ResponseDao;
 import com.example.app.sms.dao.TeacherDao;
 import com.example.app.sms.entity.Teacher;
 
@@ -12,6 +11,6 @@ public interface TeacherService {
 
     MessageResponse createTeacher(TeacherDao teacherDao);
 
-    List<Teacher> getAllTeachers();
+    ResponseDao getAllTeachers(Integer pageNo, Integer pageSize, String sortBy, String sortDir);
 
 }

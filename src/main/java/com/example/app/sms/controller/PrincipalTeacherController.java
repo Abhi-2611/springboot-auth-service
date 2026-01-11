@@ -1,13 +1,11 @@
 package com.example.app.sms.controller;
 
-import com.example.app.sms.entity.Teacher;
+import com.example.app.sms.dao.ResponseDao;
 import com.example.app.sms.service.TeacherService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/principal/teachers")
@@ -18,7 +16,11 @@ public class PrincipalTeacherController {
 
     @GetMapping("/getAllTeachers")
     @PreAuthorize("hasAnyRole('PRINCIPAL','ADMIN')")
-    public List<Teacher> getAllTeachers() {
-        return teacherService.getAllTeachers();
+    public ResponseDao getAllTeacher(
+        @RequestParam(required = false) Integer pageNo,
+        @RequestParam(required = false) Integer pageSize,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "DESC") String sortDir) {
+        return teacherService.getAllTeachers(pageNo, pageSize, sortBy, sortDir);
     }
 }
