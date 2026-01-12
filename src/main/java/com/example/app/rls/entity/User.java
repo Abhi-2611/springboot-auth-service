@@ -2,6 +2,8 @@ package com.example.app.rls.entity;
 
 import java.util.Set;
 
+import com.example.app.common.audit.Auditable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,17 +20,19 @@ import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "users", schema = "rls", uniqueConstraints = {
     @UniqueConstraint(columnNames = "username"),
     @UniqueConstraint(columnNames = "email") })
-public class User {
+public class User extends Auditable {
 
     @Id
     @Column(name = "\"id\"", precision = 19)

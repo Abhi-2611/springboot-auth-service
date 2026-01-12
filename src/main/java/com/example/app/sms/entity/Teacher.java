@@ -2,6 +2,8 @@ package com.example.app.sms.entity;
 
 import java.time.LocalDate;
 
+import com.example.app.common.audit.Auditable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,15 +14,17 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 @Data
 @Builder
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
 @Table(name = "teachers", schema = "school", uniqueConstraints = {@UniqueConstraint(columnNames = "employee_code")})
-public class Teacher {
+public class Teacher extends Auditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
