@@ -97,5 +97,19 @@ public class TeacherClassSubjectMappingServiceImpl implements TeacherClassSubjec
         })
         .collect(Collectors.toList());
     }
+
+    @Override
+    public List<TeacherClassSubjectMappingDao> getAllSubjectMappings() {
+
+        return teacherClassSubjectMappingRepository.findAllByActiveFlag('Y').stream()
+            .map(mapping -> {
+                TeacherClassSubjectMappingDao res = new TeacherClassSubjectMappingDao();
+                    res.setTeacherId(mapping.getTeacherId());
+                    res.setClassId(mapping.getClassId());
+                    res.setSubjectId(mapping.getSubjectId());
+                    return res;
+            })
+            .collect(Collectors.toList());
+    }
     
 }

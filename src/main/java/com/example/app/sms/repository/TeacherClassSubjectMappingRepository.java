@@ -14,5 +14,7 @@ public interface TeacherClassSubjectMappingRepository
     Boolean existsByTeacherIdAndClassIdAndSubjectId(Long teacherId, Long classId, Long subjectId);
 
     List<TeacherClassSubjectMapping> findAllByTeacherId(Long teacherId);
+
+    List<TeacherClassSubjectMapping> findAllByActiveFlag(Character activeFlag);
     
 }

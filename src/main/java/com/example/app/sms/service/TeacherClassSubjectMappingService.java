@@ -11,5 +11,7 @@ public interface TeacherClassSubjectMappingService {
     
     List<TeacherClassSubjectMappingDao> getMySubjectsAndClasses();
 
+    List<TeacherClassSubjectMappingDao> getAllSubjectMappings();
+
 }
 
