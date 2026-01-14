@@ -73,6 +73,10 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         studentAttendance.setAttendanceDate(studentAttendanceDao.getAttendanceDate());
         studentAttendance.setStatus(studentAttendanceDao.getStatus());
 
+        int lockDays = 0;
+        if (isLocked(studentAttendanceDao.getAttendanceDate(), lockDays)) {
+            throw new BadRequestException("Attendance is locked for this date");
+        }
         studentAttendanceRepository.save(studentAttendance);
 
         return MessageResponse.builder().message("Attendance marked successfully").build();
@@ -127,6 +131,12 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         studentAttendanceRepository.save(studentAttendance);
 
         return MessageResponse.builder().message("Attendance corrected successfully").build();
+    }
+
+    // Lock Attendance After a Date
+    public static Boolean isLocked(LocalDate attendanceDate, int lockDays) {
+        LocalDate allowedTill = LocalDate.now().minusDays(lockDays);
+        return attendanceDate.isBefore(allowedTill);
     }
 
 }
