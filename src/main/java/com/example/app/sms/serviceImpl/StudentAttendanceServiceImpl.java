@@ -109,4 +109,24 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
             .toList();
     }
 
+    @Override
+    public MessageResponse correctAttendance(StudentAttendanceDao studentAttendanceDao) {
+
+        if (studentAttendanceDao.getId() == null) {
+            throw new BadRequestException("Attendance Id is required");
+        }
+        if (studentAttendanceDao.getStatus() == null) {
+            throw new BadRequestException("Attendance status is required");
+        }
+        if (studentAttendanceDao.getStatus() != 'P' && studentAttendanceDao.getStatus() != 'A') {
+            throw new BadRequestException("Invalid attendance status");
+        }
+        StudentAttendance studentAttendance = studentAttendanceRepository.findById(studentAttendanceDao.getId()).orElseThrow(() ->
+            new ResourceNotFoundException("Attendance not found with Id: " + studentAttendanceDao.getId()));
+        studentAttendance.setStatus(studentAttendanceDao.getStatus());
+        studentAttendanceRepository.save(studentAttendance);
+
+        return MessageResponse.builder().message("Attendance corrected successfully").build();
+    }
+
 }

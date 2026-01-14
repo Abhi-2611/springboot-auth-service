@@ -11,5 +11,7 @@ public interface StudentAttendanceService {
     MessageResponse markAttendance(StudentAttendanceDao studentAttendanceDao);
 
     List<StudentAttendanceDao> getClassAttendance(Long classId, LocalDate date);
+
+    MessageResponse correctAttendance(StudentAttendanceDao studentAttendanceDao);
     
 }
