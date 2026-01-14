@@ -1,0 +1,79 @@
+package com.example.app.sms.serviceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.example.app.common.exception.BadRequestException;
+import com.example.app.common.exception.ResourceNotFoundException;
+import com.example.app.rls.dao.MessageResponse;
+import com.example.app.rls.entity.User;
+import com.example.app.rls.repository.UserRepository;
+import com.example.app.sms.dao.StudentAttendanceDao;
+import com.example.app.sms.entity.Student;
+import com.example.app.sms.entity.StudentAttendance;
+import com.example.app.sms.entity.Teacher;
+import com.example.app.sms.repository.StudentAttendanceRepository;
+import com.example.app.sms.repository.StudentRepository;
+import com.example.app.sms.repository.TeacherClassMappingRepository;
+import com.example.app.sms.repository.TeacherRepository;
+import com.example.app.sms.service.StudentAttendanceService;
+
+@Service
+public class StudentAttendanceServiceImpl implements StudentAttendanceService {
+
+    @Autowired
+    private StudentAttendanceRepository studentAttendanceRepository;
+    
+    @Autowired
+    private TeacherRepository teacherRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private TeacherClassMappingRepository teacherClassMappingRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+
+
+    @Override
+    public MessageResponse markAttendance(StudentAttendanceDao studentAttendanceDao) {
+
+        if (studentAttendanceDao.getStudentId() == null || studentAttendanceDao.getClassId() == null ||
+            studentAttendanceDao.getAttendanceDate() == null || studentAttendanceDao.getStatus() == null) {
+            throw new BadRequestException("All attendance fields are required");
+        }
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+        Teacher teacher = teacherRepository.findByUserId(user.getId()).orElseThrow(() ->
+            new ResourceNotFoundException("Teacher not found for logged-in user"));
+        Student student = studentRepository.findById(studentAttendanceDao.getStudentId()).orElseThrow(() ->
+            new ResourceNotFoundException("Student not found with Id: " + studentAttendanceDao.getStudentId()));
+        if (!student.getClassId().equals(studentAttendanceDao.getClassId())) {
+            throw new BadRequestException("Student does not belong to this class");
+        }
+        Boolean isAssigned = teacherClassMappingRepository
+            .existsByTeacherIdAndClassId(teacher.getId(),studentAttendanceDao.getClassId());
+        if (!isAssigned) {
+            throw new BadRequestException("Teacher is not assigned to this class");
+        }
+        StudentAttendance studentAttendance = studentAttendanceRepository
+            .findByStudentIdAndAttendanceDate(studentAttendanceDao.getStudentId(), studentAttendanceDao.getAttendanceDate())
+            .orElseGet(StudentAttendance::new);
+        studentAttendance.setStudentId(studentAttendanceDao.getStudentId());
+        studentAttendance.setClassId(studentAttendanceDao.getClassId());
+        studentAttendance.setAttendanceDate(studentAttendanceDao.getAttendanceDate());
+        studentAttendance.setStatus(studentAttendanceDao.getStatus());
+
+        studentAttendanceRepository.save(studentAttendance);
+
+        return MessageResponse.builder().message("Attendance marked successfully").build();
+
+    }
+}
+

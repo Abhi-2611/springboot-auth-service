@@ -13,6 +13,6 @@ public interface TeacherClassMappingRepository extends JpaRepository<TeacherClas
     @Query(" SELECT t.classId from TeacherClassMapping t where t.teacherId = :teacherId")
     List<Long> findClassIdsByTeacherId(Long teacherId);
 
-    boolean existsByTeacherIdAndClassId(Long teacherId, Long classId);
+    Boolean existsByTeacherIdAndClassId(Long teacherId, Long classId);
 
 }
