@@ -1,5 +1,8 @@
 package com.example.app.sms.serviceImpl;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -75,5 +78,35 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return MessageResponse.builder().message("Attendance marked successfully").build();
 
     }
-}
 
+    @Override
+    public List<StudentAttendanceDao> getClassAttendance(Long classId, LocalDate date) {
+
+        if (classId == null || date == null) {
+            throw new BadRequestException("ClassId and date are required");
+        }
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+        Teacher teacher = teacherRepository.findByUserId(user.getId()).orElseThrow(() ->
+            new ResourceNotFoundException("Teacher not found for logged-in user"));
+
+        Boolean isAssigned = teacherClassMappingRepository
+            .existsByTeacherIdAndClassId(teacher.getId(), classId);
+
+        if (!isAssigned) {
+            throw new BadRequestException("Teacher is not assigned to this class");
+        }
+
+        return studentAttendanceRepository.findAllByClassIdAndAttendanceDate(classId, date).stream()
+            .map(att -> {
+                StudentAttendanceDao res = new StudentAttendanceDao();
+                res.setStudentId(att.getStudentId());
+                res.setStatus(att.getStatus());
+                res.setAttendanceDate(att.getAttendanceDate());
+                return res;
+            })
+            .toList();
+    }
+
+}
