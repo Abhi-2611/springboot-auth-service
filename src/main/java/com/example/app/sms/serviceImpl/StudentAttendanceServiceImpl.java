@@ -16,6 +16,7 @@ import com.example.app.sms.dao.StudentAttendanceDao;
 import com.example.app.sms.entity.Student;
 import com.example.app.sms.entity.StudentAttendance;
 import com.example.app.sms.entity.Teacher;
+import com.example.app.sms.repository.AttendanceDayClosureRepository;
 import com.example.app.sms.repository.StudentAttendanceRepository;
 import com.example.app.sms.repository.StudentRepository;
 import com.example.app.sms.repository.TeacherClassMappingRepository;
@@ -40,6 +41,8 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private AttendanceDayClosureRepository attendanceDayClosureRepository;
 
 
     @Override
@@ -73,10 +76,20 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         studentAttendance.setAttendanceDate(studentAttendanceDao.getAttendanceDate());
         studentAttendance.setStatus(studentAttendanceDao.getStatus());
 
+        // lock
         int lockDays = 0;
         if (isLocked(studentAttendanceDao.getAttendanceDate(), lockDays)) {
             throw new BadRequestException("Attendance is locked for this date");
         }
+
+        // auto close 
+        attendanceDayClosureRepository
+        .findByClassIdAndAttendanceDate(studentAttendanceDao.getClassId(), studentAttendanceDao.getAttendanceDate())
+        .ifPresent(closure -> {
+            if (Boolean.TRUE.equals(closure.getClosed())) {
+                throw new BadRequestException("Attendance is closed for this class and date");
+            }
+        });
         studentAttendanceRepository.save(studentAttendance);
 
         return MessageResponse.builder().message("Attendance marked successfully").build();
