@@ -1,13 +1,21 @@
 package com.example.app.sms.serviceImpl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
 import com.example.app.common.exception.BadRequestException;
 import com.example.app.common.exception.DuplicateResourceException;
 import com.example.app.common.exception.ResourceNotFoundException;
 import com.example.app.rls.dao.MessageResponse;
+import com.example.app.rls.entity.User;
+import com.example.app.rls.repository.UserRepository;
 import com.example.app.sms.dao.TeacherClassSubjectMappingDao;
 import com.example.app.sms.entity.Subject;
+import com.example.app.sms.entity.Teacher;
 import com.example.app.sms.entity.TeacherClassSubjectMapping;
 import com.example.app.sms.repository.SchoolClassRepository;
 import com.example.app.sms.repository.SubjectRepository;
@@ -15,6 +23,7 @@ import com.example.app.sms.repository.TeacherClassSubjectMappingRepository;
 import com.example.app.sms.repository.TeacherRepository;
 import com.example.app.sms.service.TeacherClassSubjectMappingService;
 
+@Service
 public class TeacherClassSubjectMappingServiceImpl implements TeacherClassSubjectMappingService{
 
     @Autowired
@@ -28,6 +37,9 @@ public class TeacherClassSubjectMappingServiceImpl implements TeacherClassSubjec
 
     @Autowired
     private SubjectRepository subjectRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public MessageResponse assignSubjectToTeacher(TeacherClassSubjectMappingDao teacherClassSubjectMappingDao) {
@@ -65,6 +77,25 @@ public class TeacherClassSubjectMappingServiceImpl implements TeacherClassSubjec
 
         return MessageResponse.builder().message("Subject assigned to teacher successfully").build();
         
+    }
+
+    @Override
+    public List<TeacherClassSubjectMappingDao> getMySubjectsAndClasses() {
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+        Teacher teacher = teacherRepository.findByUserId(user.getId()).orElseThrow(() ->
+            new ResourceNotFoundException("Teacher profile not found for user"));
+
+        return teacherClassSubjectMappingRepository.findAllByTeacherId(teacher.getId()).stream()
+        .map(mapping -> {
+                TeacherClassSubjectMappingDao res = new TeacherClassSubjectMappingDao();
+                res.setClassId(mapping.getClassId());
+                res.setSubjectId(mapping.getSubjectId());
+                return res;
+        })
+        .collect(Collectors.toList());
     }
     
 }

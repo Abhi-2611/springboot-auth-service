@@ -15,5 +15,6 @@ public class TeacherClassSubjectMappingDao {
     private Long teacherId;
     private Long classId;
     private Long subjectId;
+    private Character activeFlag;
 
 }
