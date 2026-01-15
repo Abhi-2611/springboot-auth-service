@@ -19,5 +19,9 @@ public class StudentAttendanceDao {
     private LocalDate attendanceDate;
     private Character status;
     private Character activeFlag;
+
+    private Integer totalDays;
+    private Integer presentDays;
+    private Double attendancePercentage;
     
 }

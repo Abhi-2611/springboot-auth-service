@@ -1,7 +1,11 @@
 package com.example.app.sms.serviceImpl;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -150,6 +154,31 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
     public static Boolean isLocked(LocalDate attendanceDate, int lockDays) {
         LocalDate allowedTill = LocalDate.now().minusDays(lockDays);
         return attendanceDate.isBefore(allowedTill);
+    }
+
+    @Override
+    public List<StudentAttendanceDao> getMonthlyReport(Long classId, YearMonth month) {
+
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
+        List<StudentAttendance> records = studentAttendanceRepository
+            .findAllByClassIdAndAttendanceDateBetween(classId, startDate, endDate);
+        Map<Long, List<StudentAttendance>> grouped = records.stream()
+            .collect(Collectors.groupingBy(StudentAttendance::getStudentId));
+        
+        List<StudentAttendanceDao> reportList = new ArrayList<>();
+        for (Map.Entry<Long, List<StudentAttendance>> entry : grouped.entrySet()) {
+            long totalDays = entry.getValue().size();
+            long presentDays = entry.getValue().stream().filter(a -> a.getStatus() == 'P').count();
+
+            StudentAttendanceDao report = new StudentAttendanceDao();
+            report.setStudentId(entry.getKey());
+            report.setTotalDays((int) totalDays);
+            report.setPresentDays((int) presentDays);
+            report.setAttendancePercentage(totalDays == 0 ? 0.0 : (presentDays * 100.0) / totalDays);
+            reportList.add(report);
+        }
+        return reportList;
     }
 
 }
