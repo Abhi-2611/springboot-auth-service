@@ -23,5 +23,9 @@ public class StudentAttendanceDao {
     private Integer totalDays;
     private Integer presentDays;
     private Double attendancePercentage;
+
+    private Integer totalStudents;
+    private Integer totalPresent;
+    private Integer totalAbsent;
     
 }

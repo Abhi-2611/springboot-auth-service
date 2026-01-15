@@ -21,5 +21,6 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     Optional<StudentAttendance> findByStudentIdAndAttendanceDate(Long studentId, LocalDate attendanceDate);
 
     List<StudentAttendance> findAllByClassIdAndAttendanceDateBetween(Long classId, LocalDate startDate, LocalDate endDate);
+    
 }
 

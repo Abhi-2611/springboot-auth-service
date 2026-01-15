@@ -19,6 +19,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findByClassId(Long classId);
 
     Page<Student> findAll(Pageable pageable);
+
+    int countByClassId(Long classId);
     
 }
 

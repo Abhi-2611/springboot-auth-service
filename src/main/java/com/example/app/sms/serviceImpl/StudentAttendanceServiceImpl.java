@@ -181,4 +181,27 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return reportList;
     }
 
+    @Override
+    public StudentAttendanceDao getClassMonthlyReport(Long classId, YearMonth month) {
+
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
+        List<StudentAttendance> records = studentAttendanceRepository
+            .findAllByClassIdAndAttendanceDateBetween(classId, startDate, endDate);
+        int totalPresent = (int) records.stream().filter(a -> a.getStatus() == 'P').count();
+        int totalAbsent = (int) records.stream().filter(a -> a.getStatus() == 'A').count();
+        int totalEntries = totalPresent + totalAbsent;
+        int totalStudents = studentRepository.countByClassId(classId);
+
+        StudentAttendanceDao report = new StudentAttendanceDao();
+        report.setClassId(classId);
+        report.setTotalStudents(totalStudents);
+        report.setTotalDays(totalStudents == 0 ? 0 : totalEntries / totalStudents);
+        report.setTotalPresent(totalPresent);
+        report.setTotalAbsent(totalAbsent);
+        report.setAttendancePercentage(totalEntries == 0 ? 0.0 : (totalPresent * 100.0) / totalEntries);
+
+        return report;
+    }
+
 }

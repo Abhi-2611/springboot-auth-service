@@ -26,4 +26,10 @@ public class PrincipalAttendanceReportController {
         @RequestParam Integer year, @RequestParam Integer month) {
         return studentAttendanceService.getMonthlyReport(classId, YearMonth.of(year, month));
     }
+
+    @GetMapping("/attendance/report/classReport")
+    public StudentAttendanceDao getClassReport(@RequestParam Long classId, 
+        @RequestParam Integer year, @RequestParam Integer month) {
+        return studentAttendanceService.getClassMonthlyReport(classId, YearMonth.of(year, month));
+    }
 }
