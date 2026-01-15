@@ -236,4 +236,34 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return result;
     }
 
+    @Override
+    public List<StudentAttendanceDao> getStudentAttendanceHistory(Long studentId, LocalDate fromDate, LocalDate toDate) {
+
+        Student student = studentRepository.findById(studentId).orElseThrow(() ->
+            new ResourceNotFoundException("Student not found with Id: " + studentId));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+        Boolean isTeacher = user.getRoles().stream().anyMatch(r -> r.getRolename().equals("ROLE_TEACHER"));
+
+        if (isTeacher) {
+            Teacher teacher = teacherRepository.findByUserId(user.getId()).orElseThrow(() ->
+                new ResourceNotFoundException("Teacher not found"));
+            Boolean isMapped = teacherClassMappingRepository
+                .existsByTeacherIdAndClassId(teacher.getId(),student.getClassId());
+            if (!isMapped) {
+                throw new BadRequestException("Teacher is not authorized to access this student");
+            }
+        }
+        return studentAttendanceRepository
+            .findAllByStudentIdAndAttendanceDateBetween(studentId, fromDate, toDate).stream()
+            .map(att -> {
+                StudentAttendanceDao res = new StudentAttendanceDao();
+                res.setAttendanceDate(att.getAttendanceDate());
+                res.setStatus(att.getStatus());
+                return res;
+            })
+            .toList();
+    }
+
 }

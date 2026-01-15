@@ -21,4 +21,6 @@ public interface StudentAttendanceService {
 
     List<StudentAttendanceDao> getLowAttendanceReport(Long classId, YearMonth month, Double thresholdPercentage);
     
+    List<StudentAttendanceDao> getStudentAttendanceHistory(Long studentId, LocalDate fromDate, LocalDate toDate);
+    
 }
