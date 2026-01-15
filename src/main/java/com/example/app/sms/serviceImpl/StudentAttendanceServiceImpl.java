@@ -204,4 +204,36 @@ public class StudentAttendanceServiceImpl implements StudentAttendanceService {
         return report;
     }
 
+    @Override
+    public List<StudentAttendanceDao> getLowAttendanceReport(Long classId, YearMonth month, Double thresholdPercentage) {
+        
+        if (thresholdPercentage == null) {
+            thresholdPercentage = 75.0;
+        }
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
+
+        List<StudentAttendance> records = studentAttendanceRepository
+            .findAllByClassIdAndAttendanceDateBetween(classId, startDate, endDate);
+        Map<Long, List<StudentAttendance>> grouped = records.stream()
+            .collect(Collectors.groupingBy(StudentAttendance::getStudentId));
+
+        List<StudentAttendanceDao> result = new ArrayList<>();
+        for (Map.Entry<Long, List<StudentAttendance>> entry : grouped.entrySet()) {
+            int totalDays = entry.getValue().size();
+            long presentDays = entry.getValue().stream().filter(a -> a.getStatus() == 'P').count();
+            double percentage = totalDays == 0 ? 0.0 : (presentDays * 100.0) / totalDays;
+
+            if (percentage < thresholdPercentage) {
+                StudentAttendanceDao res = new StudentAttendanceDao();
+                res.setStudentId(entry.getKey());
+                res.setTotalDays(totalDays);
+                res.setPresentDays((int) presentDays);
+                res.setAttendancePercentage(percentage);
+                result.add(res);
+            }
+        }
+        return result;
+    }
+
 }

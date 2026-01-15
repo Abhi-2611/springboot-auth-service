@@ -32,4 +32,11 @@ public class PrincipalAttendanceReportController {
         @RequestParam Integer year, @RequestParam Integer month) {
         return studentAttendanceService.getClassMonthlyReport(classId, YearMonth.of(year, month));
     }
+
+    @GetMapping("/attendance/report/lowAttendance")
+    public List<StudentAttendanceDao> getLowAttendanceReport(@RequestParam Long classId, 
+        @RequestParam Integer year, @RequestParam Integer month, 
+        @RequestParam(required = false) Double threshold) {
+        return studentAttendanceService.getLowAttendanceReport(classId, YearMonth.of(year, month), threshold);
+    }
 }

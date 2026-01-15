@@ -18,5 +18,7 @@ public interface StudentAttendanceService {
     List<StudentAttendanceDao> getMonthlyReport(Long classId, YearMonth month);
     
     StudentAttendanceDao getClassMonthlyReport(Long classId, YearMonth month);
+
+    List<StudentAttendanceDao> getLowAttendanceReport(Long classId, YearMonth month, Double thresholdPercentage);
     
 }
