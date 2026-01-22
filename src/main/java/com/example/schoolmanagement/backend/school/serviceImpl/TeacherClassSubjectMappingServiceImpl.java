@@ -1,0 +1,115 @@
+package com.example.schoolmanagement.backend.school.serviceImpl;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.example.schoolmanagement.backend.auth.dao.MessageResponse;
+import com.example.schoolmanagement.backend.auth.entity.User;
+import com.example.schoolmanagement.backend.auth.repository.UserRepository;
+import com.example.schoolmanagement.backend.common.exception.BadRequestException;
+import com.example.schoolmanagement.backend.common.exception.DuplicateResourceException;
+import com.example.schoolmanagement.backend.common.exception.ResourceNotFoundException;
+import com.example.schoolmanagement.backend.school.dao.TeacherClassSubjectMappingDao;
+import com.example.schoolmanagement.backend.school.entity.Subject;
+import com.example.schoolmanagement.backend.school.entity.Teacher;
+import com.example.schoolmanagement.backend.school.entity.TeacherClassSubjectMapping;
+import com.example.schoolmanagement.backend.school.repository.SchoolClassRepository;
+import com.example.schoolmanagement.backend.school.repository.SubjectRepository;
+import com.example.schoolmanagement.backend.school.repository.TeacherClassSubjectMappingRepository;
+import com.example.schoolmanagement.backend.school.repository.TeacherRepository;
+import com.example.schoolmanagement.backend.school.service.TeacherClassSubjectMappingService;
+
+@Service
+public class TeacherClassSubjectMappingServiceImpl implements TeacherClassSubjectMappingService{
+
+    @Autowired
+    private TeacherClassSubjectMappingRepository teacherClassSubjectMappingRepository;
+
+    @Autowired
+    private TeacherRepository teacherRepository;
+    
+    @Autowired
+    private SchoolClassRepository schoolClassRepository;
+
+    @Autowired
+    private SubjectRepository subjectRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public MessageResponse assignSubjectToTeacher(TeacherClassSubjectMappingDao teacherClassSubjectMappingDao) {
+        
+        if (teacherClassSubjectMappingDao.getTeacherId() == null ||
+            teacherClassSubjectMappingDao.getClassId() == null ||
+            teacherClassSubjectMappingDao.getSubjectId() == null) {
+            throw new BadRequestException("TeacherId, ClassId and SubjectId are required");
+        }
+
+        teacherRepository.findById(teacherClassSubjectMappingDao.getTeacherId()).orElseThrow(() ->
+            new ResourceNotFoundException("Teacher not found with Id: " + teacherClassSubjectMappingDao.getTeacherId()));
+
+        schoolClassRepository.findById(teacherClassSubjectMappingDao.getClassId()).orElseThrow(() ->
+            new ResourceNotFoundException("Class not found with Id: " + teacherClassSubjectMappingDao.getClassId()));
+
+        Subject subject = subjectRepository.findById(teacherClassSubjectMappingDao.getSubjectId()).orElseThrow(() ->
+            new ResourceNotFoundException("Subject not found with Id: " + teacherClassSubjectMappingDao.getSubjectId()));
+
+        if (subject.getActiveFlag() == 'N') {
+            throw new BadRequestException("Inactive subject cannot be assigned");
+        }
+
+        if (teacherClassSubjectMappingRepository.existsByTeacherIdAndClassIdAndSubjectId(teacherClassSubjectMappingDao.getTeacherId(), 
+            teacherClassSubjectMappingDao.getClassId(), teacherClassSubjectMappingDao.getSubjectId())) {
+            throw new DuplicateResourceException("Subject already assigned to this teacher for the class");
+        }
+
+        TeacherClassSubjectMapping mapping = new TeacherClassSubjectMapping();
+        mapping.setTeacherId(teacherClassSubjectMappingDao.getTeacherId());
+        mapping.setClassId(teacherClassSubjectMappingDao.getClassId());
+        mapping.setSubjectId(teacherClassSubjectMappingDao.getSubjectId());
+
+        teacherClassSubjectMappingRepository.save(mapping);
+
+        return MessageResponse.builder().message("Subject assigned to teacher successfully").build();
+        
+    }
+
+    @Override
+    public List<TeacherClassSubjectMappingDao> getMySubjectsAndClasses() {
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+            new ResourceNotFoundException("User not found"));
+        Teacher teacher = teacherRepository.findByUserId(user.getId()).orElseThrow(() ->
+            new ResourceNotFoundException("Teacher profile not found for user"));
+
+        return teacherClassSubjectMappingRepository.findAllByTeacherId(teacher.getId()).stream()
+        .map(mapping -> {
+                TeacherClassSubjectMappingDao res = new TeacherClassSubjectMappingDao();
+                res.setClassId(mapping.getClassId());
+                res.setSubjectId(mapping.getSubjectId());
+                return res;
+        })
+        .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TeacherClassSubjectMappingDao> getAllSubjectMappings() {
+
+        return teacherClassSubjectMappingRepository.findAllByActiveFlag('Y').stream()
+            .map(mapping -> {
+                TeacherClassSubjectMappingDao res = new TeacherClassSubjectMappingDao();
+                    res.setTeacherId(mapping.getTeacherId());
+                    res.setClassId(mapping.getClassId());
+                    res.setSubjectId(mapping.getSubjectId());
+                    return res;
+            })
+            .collect(Collectors.toList());
+    }
+    
+}
